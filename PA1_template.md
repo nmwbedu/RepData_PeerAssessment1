@@ -48,7 +48,7 @@ total_steps %>%
   geom_histogram(bins = 30)
 ```
 
-![](PA1_template_files/figure-html/total steps-1.png)<!-- -->
+![](PA1_template_files/figure-html/total_steps-1.png)<!-- -->
 
 ```r
 mean_steps <- mean(total_steps$steps)
@@ -72,7 +72,7 @@ daily_steps %>%
   geom_line()
 ```
 
-![](PA1_template_files/figure-html/daily activity-1.png)<!-- -->
+![](PA1_template_files/figure-html/daily_activity-1.png)<!-- -->
 
 ```r
 max_interval <- daily_steps$interval[which.max(daily_steps$avg_steps)]
@@ -106,7 +106,7 @@ total_steps_imputed %>%
   geom_histogram(bins = 30)
 ```
 
-![](PA1_template_files/figure-html/missing values-1.png)<!-- -->
+![](PA1_template_files/figure-html/missing_values-1.png)<!-- -->
 
 ```r
 mean_steps_imp <- mean(total_steps_imputed$steps)

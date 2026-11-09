@@ -14,7 +14,7 @@ activity_raw <- read.csv("activity.csv")
 
 
 ## What is mean total number of steps taken per day?
-```{r total steps}
+```{r total_steps}
 library(tidyverse)
 total_steps <- activity_raw %>%
   group_by(date) %>%
@@ -33,7 +33,7 @@ The daily mean number of steps is `r round(mean_steps)`, and the daily median nu
 
 ## What is the average daily activity pattern?
 
-```{r daily activity}
+```{r daily_activity}
 daily_steps <-
   activity_raw %>%
   group_by(interval) %>%
@@ -52,7 +52,7 @@ The 5 minute interval with the most steps on average is `r max_interval` with `r
 
 ## Imputing missing values
 
-```{r missing values}
+```{r missing_values}
 total_na_steps <- sum(is.na(activity_raw$steps))
 mean_na_steps <- mean(is.na(activity_raw$steps))
 
