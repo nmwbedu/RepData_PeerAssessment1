@@ -7,19 +7,94 @@ output:
 
 
 ## Loading and preprocessing the data
-
+```{r loading data}
+options(scipen = 999)
+activity_raw <- read.csv("activity.csv")
+```
 
 
 ## What is mean total number of steps taken per day?
+```{r total steps}
+library(tidyverse)
+total_steps <- activity_raw %>%
+  group_by(date) %>%
+  summarize(steps = sum(steps, na.rm= TRUE),
+            .groups = "drop")
 
+total_steps %>%
+  ggplot(aes(x=steps)) +
+  geom_histogram(bins = 30)
 
+mean_steps <- mean(total_steps$steps)
+med_steps <- median(total_steps$steps)
+```
+
+The daily mean number of steps is `r round(mean_steps)`, and the daily median number of steps is `r med_steps`
 
 ## What is the average daily activity pattern?
 
+```{r daily activity}
+daily_steps <-
+  activity_raw %>%
+  group_by(interval) %>%
+  summarize(avg_steps = mean(steps, na.rm = TRUE),
+            .groups = "drop")
 
+daily_steps %>%
+  ggplot(aes(x = interval, y = avg_steps)) +
+  geom_line()
+
+max_interval <- daily_steps$interval[which.max(daily_steps$avg_steps)]
+max_avg_steps <- daily_steps$avg_steps[which.max(daily_steps$avg_steps)]
+```
+
+The 5 minute interval with the most steps on average is `r max_interval` with `r max_avg_steps` steps.
 
 ## Imputing missing values
 
+```{r missing values}
+total_na_steps <- sum(is.na(activity_raw$steps))
+mean_na_steps <- mean(is.na(activity_raw$steps))
 
+# Imputing step:
+# Attach the daily average steps per interval, select the imputed value if the 
+# original is NA, and remove all working columns
+activity_imputed <- activity_raw %>%
+  left_join(daily_steps, by = "interval") %>%
+  mutate(steps_new = coalesce(steps, avg_steps)) %>%
+  select(steps = steps_new, date, interval)
+
+total_steps_imputed <- activity_imputed %>%
+  group_by(date) %>%
+  summarize(steps = sum(steps),
+            .groups = "drop")
+
+total_steps_imputed %>%
+  ggplot(aes(x=steps)) +
+  geom_histogram(bins = 30)
+
+mean_steps_imp <- mean(total_steps_imputed$steps)
+med_steps_imp <- median(total_steps_imputed$steps)
+```
+
+There are a total of `r total_na_steps` (`r round(mean_na_steps*100)`%) intervals missing step data. After imputing the missing number of steps with the daily average for that interval, we see that the mean number of steps per day increases from `r round(mean_steps)` to `r round(mean_steps_imp)` (an increase of `r round(mean_steps_imp - mean_steps)`) and the median number of steps per day increases from `r round(med_steps)` to `r round(med_steps_imp)` (an increase of `r round(med_steps_imp - med_steps)`).
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r weekdays}
+activity_imputed <- activity_imputed %>%
+  mutate(weekend = weekdays(as.Date(date)) %in% c("Saturday", "Sunday")) %>% # Boolean TRUE if weekend day
+  mutate(weekday = if_else(weekend, "weekend", "weekday")) %>%
+  mutate(weekday = as.factor(weekday))
+
+daily_steps_imp <-
+  activity_imputed %>%
+  group_by(interval, weekday) %>%
+  summarize(avg_steps = mean(steps), # not using na.rm=TRUE because the data should have no NAs.
+            .groups = "drop")
+
+daily_steps_imp %>%
+  ggplot(aes(x = interval, y = avg_steps)) +
+  geom_line() +
+  facet_grid(rows = vars(weekday))
+```
